@@ -9,6 +9,7 @@ import os
 from pydrive.auth import GoogleAuth
 from pydrive.drive import GoogleDrive
 
+from typing import List,Dict,NoReturn,Any,Callable,Optional
 
 class Drive(object):
     ''' A simple, single-purpose-specific, wrapper
@@ -23,7 +24,7 @@ class Drive(object):
         AN EXCEPTION WILL BE THROWN.
         '''
         if 'client_secrets.json' not in os.listdir('.'):
-            raise Exception
+            raise Exception(f"client_secrets.json not found in {os.path.abspath('.')}")
         self.__gauth = GoogleAuth()
         try:
             self.__gauth.LoadCredentialsFile(credentials_file)
@@ -150,21 +151,41 @@ class Drive(object):
             return True
         except (BaseException, FileNotFoundError):
             return False
+    
     @property
     def files(self):
+        """ 
+            List of regular files found at the account's root '/', i.e.
+            not inside any other folder.
+            These are just names or 'titles' in Google Drive API's
+            terminology, that can be used to download the file.
+        """
         return [ entry['title'] for entry in self.__query_drive() ]
 
-    def __query_drive(self, query: str = '') -> list:
+    @property
+    def folders(self):
+        """
+            A dictionary containing all folders found at the account's root.
+            The pairs are
+            {
+                title: id
+            }
+        """ 
+        return {
+            entry['title']: entry['id'] 
+            for entry in self.__query_drive({
+                'q': "'root' in parents and mimeType = 'application/vnd.google-apps.folder'"
+            })
+        }
+
+    def __query_drive(self, query: Optional[Dict[str,str]] = None) -> list:
         ''' Helper method returning a list of files.
         A wrapper for the call:
             self.__drive.ListFile(_query).GetList()
         Default query:
             {'q': "'root' in parents and trashed=false"}
         '''
-        if query:
-            _query = query
-        else:
-            _query = {'q': "'root' in parents and trashed=false"}
+        _query = query or {'q': "'root' in parents and trashed=false"}
         file_list = self.__drive.ListFile(_query).GetList()
         return file_list
 

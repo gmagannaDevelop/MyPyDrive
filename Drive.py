@@ -16,6 +16,10 @@ class Drive(object):
     for PyDrive.
     '''
 
+    _query_kw = {
+       "directory": ""
+    }
+
     def __init__(self, credentials_file: str = 'mycreds.txt'):
         ''' Initialize the drive object with a default credentials_file,
         which should be in the same directory as the script. A file can be
@@ -34,8 +38,7 @@ class Drive(object):
             # Platform-specific handling of missing credentials.
             if os.uname().sysname == 'Linux':
                 self.__gauth.LocalWebserverAuth()
-            elif (os.uname().sysname == 'Darwin' and\
-                    'iPhone' in os.uname().machine):
+            elif (os.uname().sysname == 'Darwin' and 'iPhone' in os.uname().machine):
                 import console
                 console.alert('ERROR: Manual authentication needed.')
                 self.__gauth.LocalWebserverAuth()
@@ -48,6 +51,41 @@ class Drive(object):
         self.__gauth.SaveCredentialsFile(credentials_file)
         self.__drive = GoogleDrive(self.__gauth)
     # END __init__
+
+    def recursive_query(self, file_name: str):
+        """
+            Won't work if path begins with /
+        parent = os.path.split(file_name)[0]
+        if parent:
+            recursive_query(parent)
+        dirs = os.path.normpath(file_name).split(os.sep)
+
+        idirs = iter(dirs)
+
+        file_list = self.__drive.ListFile(_query).GetList()
+        if next(idirs) in self.files:
+        # Try thinking of a way to reduce the complexity of this !
+
+        while True:
+            current = next(idirs)
+
+            _query = {"q": f""}
+            next(idirs)
+            in map(lambda x: x['title'], self.__query_drive()):
+        """
+        pass
+
+
+    def my_query(self, file_name: str, directory: Optional[str] = None):
+        """
+           Construct a query
+        """
+        folder_id = self.folders[directory] if directory else 'root'
+        _query = {
+            'q': f"'{folder_id}' in parents and title = '{file_name}'"
+        }
+        return self.__drive.ListFile(_query).GetList()
+
 
     @property
     def drive(self):
@@ -144,17 +182,19 @@ class Drive(object):
             _index = titles.index(file_name)
             _gdrive_file = file_list[_index]
         else:
-            _gdrive_file = self.__drive.CreateFile({'title': file_name})
+            _gdrive_file = self.__drive.CreateFile({
+                'title': file_name
+            })
         try:
             _gdrive_file.SetContentFile(path_to_file)
             _gdrive_file.Upload()
             return True
         except (BaseException, FileNotFoundError):
             return False
-    
+
     @property
     def files(self):
-        """ 
+        """
             List of regular files found at the account's root '/', i.e.
             not inside any other folder.
             These are just names or 'titles' in Google Drive API's
@@ -170,9 +210,9 @@ class Drive(object):
             {
                 title: id
             }
-        """ 
+        """
         return {
-            entry['title']: entry['id'] 
+            entry['title']: entry['id']
             for entry in self.__query_drive({
                 'q': "'root' in parents and mimeType = 'application/vnd.google-apps.folder'"
             })
@@ -188,5 +228,4 @@ class Drive(object):
         _query = query or {'q': "'root' in parents and trashed=false"}
         file_list = self.__drive.ListFile(_query).GetList()
         return file_list
-
 # END Drive

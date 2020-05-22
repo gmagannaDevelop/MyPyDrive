@@ -76,15 +76,31 @@ class Drive(object):
         pass
 
 
-    def my_query(self, file_name: str, directory: Optional[str] = None):
+    def my_query(self, file_name: Optional[str] = None, directory: Optional[str] = None):
         """
-           Construct a query
+           Construct a query and execute it
+
+           parameters:
+                file_name: The name of a file, or directory.
+
+                directory: Can be many things...
+                            1. The name of a directory located at root (/)
+                            2. A directory id
+                            3. root (default if not provided)
         """
-        folder_id = self.folders[directory] if directory else 'root'
+        if directory in self.folders.keys():
+            folder_id = self.folders[directory]
+        elif directory:
+            folder_id = directory
+        else:
+            folder_id = 'root'
+
+        secondary = f"and title = '{file_name}'" if file_name else ""
         _query = {
-            'q': f"'{folder_id}' in parents and title = '{file_name}'"
+            'q': f"'{folder_id}' in parents {secondary}"
         }
         return self.__drive.ListFile(_query).GetList()
+    ##
 
 
     @property
@@ -120,7 +136,29 @@ class Drive(object):
         else:
             return False
 
-    def download(self, file_name: str = '', target_name: str = ''):
+    def download_directory(
+        self,
+        target: str,
+        name: Optional[str] = None,
+        id: Optional[str] = None,
+        path: Optional[str] = None
+    ) -> NoReturn:
+        """
+        """
+        if not name or id:
+            raise Exception('Specify a directory name (if located at root), or id')
+
+        _dir = id or name
+        file_list = self.my_query(directory=_dir)
+
+        if not os.path.exists(target):
+            os.makedirs(target)
+
+        for file in file_list:
+            file.GetContentFile(os.path.join(target, file['title']))
+    ##
+
+    def download_file(self, file_name: str = '', target_name: str = ''):
         ''' Download file from drive.
         Query GoogleDrive for file_name.
         Save file to targe_name, if specified.

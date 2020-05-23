@@ -141,7 +141,8 @@ class Drive(object):
         target: str,
         name: Optional[str] = None,
         id: Optional[str] = None,
-        path: Optional[str] = None
+        path: Optional[str] = None,
+        verbose: bool = True
     ) -> NoReturn:
         """
         """
@@ -152,10 +153,23 @@ class Drive(object):
         file_list = self.my_query(directory=_dir)
 
         if not os.path.exists(target):
-            os.makedirs(target)
+            try:
+                if verbose: print(f"\nCreating target directory `{target}` ...", end="\t")
+                os.makedirs(target)
+                if verbose: print("Done")
+            except Exception as e:
+                print(f"Could not create target directory. Error details : {e}\n")
+                exit()
 
+        if verbose: print(f"\nFiles will be stored in `{target}`\n")
         for file in file_list:
-            file.GetContentFile(os.path.join(target, file['title']))
+            try:
+                if verbose: print(f"Downloading `{file['title']}` ...", end="\t")
+                file.GetContentFile(os.path.join(target, file['title']))
+                if verbose: print("Done")
+            except Exception as e:
+                print(f"\n\n ERROR: File `{file['title']}` could not be downloaded.")
+                print(f"Error details : {e}\n")
     ##
 
     def download_file(self, file_name: str = '', target_name: str = ''):

@@ -11,12 +11,13 @@ import toml
 from pydrive.auth import GoogleAuth
 from pydrive.drive import GoogleDrive
 
-from typing import List,Dict,NoReturn,Any,Callable,Optional,Union
+from typing import List, Dict, NoReturn, Any, Callable, Optional, Union
 
 from Drive import Drive
 from customobjs import objdict
 
 DEFAULT_CONFIG_FILE = ".gdrive.toml"
+
 
 def is_non_zero_file(fpath):
     """
@@ -25,7 +26,10 @@ def is_non_zero_file(fpath):
         return os.path.isfile(fpath) and os.path.getsize(fpath) > 0
     except:
         return False
+
+
 ##
+
 
 def parse_congfig(config_file: Optional[str] = None) -> objdict:
     """
@@ -41,63 +45,57 @@ def parse_congfig(config_file: Optional[str] = None) -> objdict:
     else:
         generate_config_interactive()
         return parse_congfig()
+
+
 ##
+
 
 def pull(d: Drive, config: objdict, verbose: bool = True) -> NoReturn:
     """
     """
     gfiles = d.ez_query(directory=config.info.id)
-    remote_filenames = set([
-        f['title'] for f in gfiles if not 'vnd' in f['mimeType']
-    ])
-    local_filenames = set([
-        f for f in os.listdir('.') if is_non_zero_file(f)
-    ])
+    remote_filenames = set([f["title"] for f in gfiles if not "vnd" in f["mimeType"]])
+    local_filenames = set([f for f in os.listdir(".") if is_non_zero_file(f)])
     names_to_pull = remote_filenames - local_filenames
-    files_to_pull = [
-        f for f in gfiles if f['title'] in names_to_pull
-    ]
+    files_to_pull = [f for f in gfiles if f["title"] in names_to_pull]
     for file in files_to_pull:
         try:
-            if verbose: print(f"Downloading `{file['title']}` ...", end="\t")
-            file.GetContentFile(file['title'])
-            if verbose: print("Done")
+            if verbose:
+                print(f"Downloading `{file['title']}` ...", end="\t")
+            file.GetContentFile(file["title"])
+            if verbose:
+                print("Done")
         except Exception as e:
             print(f"\n\n ERROR: File `{file['title']}` could not be downloaded.")
             print(f"Error details : {e}\n")
+
+
 ##
+
 
 def push(d: Drive, config: objdict, verbose: bool = True) -> NoReturn:
     """
     """
     gfiles = d.ez_query(directory=config.info.id)
-    remote_filenames = set([
-        f['title'] for f in gfiles if not 'vnd' in f['mimeType']
-    ])
-    local_filenames = set([
-        f for f in os.listdir('.') if is_non_zero_file(f)
-    ])
+    remote_filenames = set([f["title"] for f in gfiles if not "vnd" in f["mimeType"]])
+    local_filenames = set([f for f in os.listdir(".") if is_non_zero_file(f)])
     names_to_push = local_filenames - remote_filenames
     names_to_push -= set(config.ignore.file_list)
     for name in names_to_push:
         d.upload_simple(
-            source=name,
-            title=name,
-            parent_id=config.info.id,
-            verbose=verbose
+            source=name, title=name, parent_id=config.info.id, verbose=verbose
         )
+
+
 ##
+
 
 def status(d: Drive, config: objdict, verbose: bool = True) -> NoReturn:
     """
     """
     gfiles = d.ez_query(directory=config.info.id)
-    remote_filenames = set([
-        f['title'] for f in gfiles if not 'vnd' in f['mimeType']
-    ])
-    local_filenames = set([
-        f for f in os.listdir('.') if is_non_zero_file(f)
-    ])
+    remote_filenames = set([f["title"] for f in gfiles if not "vnd" in f["mimeType"]])
+    local_filenames = set([f for f in os.listdir(".") if is_non_zero_file(f)])
     names_to_push = local_filenames - remote_filenames
     names_to_push -= set(config.ignore.file_list)
     names_to_pull = remote_filenames - local_filenames
@@ -114,8 +112,13 @@ def status(d: Drive, config: objdict, verbose: bool = True) -> NoReturn:
             print(f"\t{name}")
         print("\nrun '$ gdrive push' to upload them\n")
     if not (names_to_pull or names_to_push):
-        print(f"\nLocal {os.path.split(os.path.abspath('.'))[1]} correctly synced with remote {config.info.name}")
+        print(
+            f"\nLocal {os.path.split(os.path.abspath('.'))[1]} correctly synced with remote {config.info.name}"
+        )
+
+
 ##
+
 
 def generate_config_interactive() -> objdict:
     """
@@ -125,7 +128,9 @@ def generate_config_interactive() -> objdict:
     """
     global DEFAULT_CONFIG_FILE
 
-    print("\n\nWelcome to the simplest and most stupid way to interact with Google Drive!")
+    print(
+        "\n\nWelcome to the simplest and most stupid way to interact with Google Drive!"
+    )
     print("This function will help you set the configuration interactively!")
     print("\n1. Input the folder/directory's name (so that you know its remote name)")
     name = input("\tname : ")
@@ -142,19 +147,15 @@ def generate_config_interactive() -> objdict:
         "name": name,
         "id": id,
         "description": description,
-        "parent_id": parent_id
+        "parent_id": parent_id,
     }
 
     print(f"\n{_config}\n")
     _is_correct = input("Is this configuration correct? [y/n] : ")
     if _is_correct:
-        _config = objdict({
-            "info": _config,
-            "ignore": {
-                "file_list": [".gdrive.toml"],
-                "glob": []
-            }
-        })
+        _config = objdict(
+            {"info": _config, "ignore": {"file_list": [".gdrive.toml"], "glob": []}}
+        )
         try:
             print(f"\nWriting configuration to {DEFAULT_CONFIG_FILE} ...", end="\t")
             with open(DEFAULT_CONFIG_FILE, "w") as f:
@@ -164,9 +165,11 @@ def generate_config_interactive() -> objdict:
             print(f"Could not write configuration to {DEFAULT_CONFIG_FILE}")
             exit()
 
+
 ##
 
-def add_ignore(file: str, config_file: Optional[str] = None) ->  NoReturn:
+
+def add_ignore(file: str, config_file: Optional[str] = None) -> NoReturn:
     """
     """
     global DEFAULT_CONFIG_FILE
@@ -184,13 +187,15 @@ def add_ignore(file: str, config_file: Optional[str] = None) ->  NoReturn:
     else:
         print(f" Ignored files : \n{_conf.ignore.file_list}")
         exit()
+
+
 ##
 
 if __name__ == "__main__":
-    if ".gdrive.toml" not in os.listdir('.'):
+    if ".gdrive.toml" not in os.listdir("."):
         print(f"\n\nNo {DEFAULT_CONFIG_FILE} file was found on this directory.")
         gen_conf = input("Interactively generate config? [y/n] : ")
-        if gen_conf == 'y':
+        if gen_conf == "y":
             generate_config_interactive()
         else:
             print("Bye!")

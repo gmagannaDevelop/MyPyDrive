@@ -1,5 +1,3 @@
-
-
 class objdict(dict):
     """
         Instantiate a dictionary that allows accesing values 
@@ -15,6 +13,7 @@ class objdict(dict):
         Original code snippet found here :
         https://goodcode.io/articles/python-dict-object/
     """
+
     def __getattr__(self, name):
         if name in self:
             return self[name]

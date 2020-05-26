@@ -95,7 +95,8 @@ class Drive(object):
     def ez_query(
         self,
         file_name: Optional[str] = None,
-        directory: Optional[str] = None
+        directory: Optional[str] = None,
+        include_trashed: bool = False
     ) -> List[Any]:
         """
            Construct a query and execute it
@@ -116,9 +117,10 @@ class Drive(object):
             folder_id = 'root'
 
         secondary = f"and title = '{file_name}'" if file_name else ""
+        tertiary  = "and trashed=true" if include_trashed else "and trashed=false"
 
         _query = {
-            'q': f"'{folder_id}' in parents {secondary}"
+            'q': f"'{folder_id}' in parents {secondary} {tertiary}"
         }
         return self.__drive.ListFile(_query).GetList()
     ##

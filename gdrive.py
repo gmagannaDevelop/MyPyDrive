@@ -65,6 +65,7 @@ def push(d: Drive, config: objdict, verbose: bool = True) -> NoReturn:
         f for f in os.listdir('.') if os.path.isfile(f)
     ])
     names_to_push = local_filenames - remote_filenames
+    names_to_push -= set(config.ignore.file_list)
     for name in names_to_push:
         d.upload_simple(
             source=name,
@@ -106,7 +107,11 @@ def generate_config_interactive() -> objdict:
     _is_correct = input("Is this configuration correct? [y/n] : ")
     if _is_correct:
         _config = objdict({
-            "info": _config
+            "info": _config,
+            "ignore": {
+                "file_list": [".gdrive.toml"],
+                "glob": []
+            }
         })
         try:
             print(f"\nWriting configuration to {DEFAULT_CONFIG_FILE} ...", end="\t")
@@ -132,12 +137,16 @@ if __name__ == "__main__":
         config = parse_congfig()
         d = Drive()
 
-    if sys.argv[1] == "pull":
-        pull(d, config)
-    elif sys.argv[1] == "push":
-        push(d, config)
+    if len(sys.argv) == 2:
+        if sys.argv[1] == "pull":
+            pull(d, config)
+        elif sys.argv[1] == "push":
+            push(d, config)
+        else:
+            print(f"Unkown option {sys.argv[1]}")
     else:
-        print(f"Unkown option {sys.argv[1]}")
+        print("gdrive action")
+        print("action can be pull or push")
 
     """
     parser = argparse.ArgumentParser(

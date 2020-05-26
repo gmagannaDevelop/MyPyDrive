@@ -75,6 +75,35 @@ def push(d: Drive, config: objdict, verbose: bool = True) -> NoReturn:
         )
 ##
 
+def status(d: Drive, config: objdict, verbose: bool = True) -> NoReturn:
+    """
+    """
+    gfiles = d.ez_query(directory=config.info.id)
+    remote_filenames = set([
+        f['title'] for f in gfiles if not 'vnd' in f['mimeType']
+    ])
+    local_filenames = set([
+        f for f in os.listdir('.') if os.path.isfile(f)
+    ])
+    names_to_push = local_filenames - remote_filenames
+    names_to_push -= set(config.ignore.file_list)
+    names_to_pull = remote_filenames - local_filenames
+
+    print(f"\nStatus of {config.info.name}, with id {config.info.id} : ")
+    if names_to_pull:
+        print(f"\nREMOTE:")
+        for name in names_to_pull:
+            print(f"\t{name}")
+        print("\nrun '$ gdrive pull' to download them\n")
+    if names_to_push:
+        print(f"\nLOCAL:")
+        for name in names_to_push:
+            print(f"\t{name}")
+        print("\nrun '$ gdrive push' to upload them\n")
+    if not (names_to_pull or names_to_push):
+        print(f"\nLocal {os.path.split(os.path.abspath('.'))[1]} correctly synced with remote {config.info.name}")
+##
+
 def generate_config_interactive() -> objdict:
     """
         Returns:
@@ -133,15 +162,17 @@ if __name__ == "__main__":
         else:
             print("Bye!")
             exit()
-    else:
-        config = parse_congfig()
-        d = Drive()
+
+    config = parse_congfig()
+    d = Drive()
 
     if len(sys.argv) == 2:
         if sys.argv[1] == "pull":
             pull(d, config)
         elif sys.argv[1] == "push":
             push(d, config)
+        elif sys.argv[1] == "status":
+            status(d, config)
         else:
             print(f"Unkown option {sys.argv[1]}")
     else:

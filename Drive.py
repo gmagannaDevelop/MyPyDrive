@@ -4,12 +4,21 @@ allows simple manipulation of files. Designed to work
 with a single file locally which will be constantly
 backed up on Google Drive.
 '''
+
+"""
+    DEVELOPMENT NOTES :
+    vnd in mimeTypes means "vendor-specific".
+    These are probably the type of files that cannot be downloaded.
+
+"""
 import os
 
 from pydrive.auth import GoogleAuth
 from pydrive.drive import GoogleDrive
 
-from typing import List,Dict,NoReturn,Any,Callable,Optional
+from typing import List,Dict,NoReturn,Any,Callable,Optional,Union
+
+from customobjs import objdict
 
 class Drive(object):
     ''' A simple, single-purpose-specific, wrapper
@@ -76,7 +85,11 @@ class Drive(object):
         pass
 
 
-    def my_query(self, file_name: Optional[str] = None, directory: Optional[str] = None):
+    def my_query(
+        self,
+        file_name: Optional[str] = None,
+        directory: Optional[str] = None
+    ) -> List[Any]:
         """
            Construct a query and execute it
 
@@ -96,6 +109,7 @@ class Drive(object):
             folder_id = 'root'
 
         secondary = f"and title = '{file_name}'" if file_name else ""
+
         _query = {
             'q': f"'{folder_id}' in parents {secondary}"
         }
@@ -107,8 +121,10 @@ class Drive(object):
     def drive(self):
         return self.__drive
 
-    def get_file_id(self, file_name: str = ''):
-        ''' Get the file id of the desired file, if it exists.
+    def get_file_id(self, file_name: str = '') -> Union[str,bool]:
+        '''
+        ROOTFUNC : to be modified
+        Get the file id of the desired file, if it exists.
         Return False upon failure i.e. file not specified, file doesn't
         exist, etc.
         '''
@@ -123,7 +139,9 @@ class Drive(object):
             return False
 
     def get_file_by_name(self, file_name: str = ''):
-        ''' Get a GoogleDriveFile instance corresponding to the
+        '''
+        ROOTFUNC : to be modified
+        Get a GoogleDriveFile instance corresponding to the
         specified file_name, if it exists.
         Return False upon failure i.e. file doesn't exist, etc.
         '''
@@ -135,14 +153,113 @@ class Drive(object):
             return file_list[names.index(file_name)]
         else:
             return False
+    ##
+
+    def upload_simple(
+        self,
+        source: str,
+        title: str,
+        id: Optional[str] = None,
+        parent_id: Optional[str] = None,
+    ) -> NoReturn:
+        """
+        """
+        parent_id = parent_id or 'root'
+
+        _file = self.drive.CreateFile({
+            'title': title,
+            parents: [{
+                "kind": "drive#parentReference",
+                "id": parent_id,
+                "isRoot": (lambda x: True if x == "root" else False)(parent_id)
+            }]
+        })
+        if id:  _file.update({"id": id})
+        try:
+            if verbose: print(f"Uploading `{source}` as `{title}` ...", end="\t")
+            _file.SetContentFile(source)
+            _file.Upload()
+            if verbose: print("Done")
+        except Exception as e:
+            print(f"\n\n ERROR: File `{source}` could not be uploaded.")
+            print(f"Error details : {e}\n")
+    ##
+
+    def __upload_recursive(
+        self,
+        source: str,
+        title: str,
+        id: Optional[str] = None,
+        parent_id: Optional[str] = None,
+        verbose: bool = True
+    ) -> NoReturn:
+        """
+            DO NOT USE YET !
+            Like upload or update, but for a directory.
+        file_list = self.__query_drive()
+        titles = [_file['title'] for _file in file_list]
+        if path:
+            path_to_file = os.path.join(path, file_name)
+        else:
+            path_to_file = file_name
+        if file_name in titles:
+            _index = titles.index(file_name)
+            _gdrive_file = file_list[_index]
+        else:
+            _gdrive_file = self.__drive.CreateFile({
+                'title': file_name
+            })
+        try:
+            _gdrive_file.SetContentFile(path_to_file)
+            _gdrive_file.Upload()
+            return True
+        except (BaseException, FileNotFoundError):
+            return False
+
+        """
+
+        if not os.path.exists(source):
+            print(f"Error: '{source}' no such file or directory")
+            exit()
+
+        parent_id = parent_id or 'root'
+        if os.path.isfile(source):
+            # This block maybe should be a function.
+            upload_simple(source, title, id=id, parent_id=parent_id)
+
+        elif os.path.isdir(source):
+            children = os.listdir(source)
+            files = [ child for child in children if os.path.isfile(child) ]
+            dirs  = [ child for child in children if os.path.isdir(child)  ]
+        else:
+            print("COULD NOT UPLOAD:")
+            print(f" File `{source}` is neither a directory or regular file.")
+
+    ##
+
+    def pull(
+        self
+    ) -> NoReturn:
+        """
+        """
+        self.my_query()
+    ##
+
+    def push(
+        self
+    ) -> NoReturn:
+        """
+        """
+        pass
+    ##
 
     def download_directory(
         self,
         target: str,
         name: Optional[str] = None,
         id: Optional[str] = None,
-        path: Optional[str] = None,
-        verbose: bool = True
+        verbose: bool = True,
+        safe: bool = True,
     ) -> NoReturn:
         """
         """
@@ -151,6 +268,10 @@ class Drive(object):
 
         _dir = id or name
         file_list = self.my_query(directory=_dir)
+        if safe: # Prevent trying to download files whose mimeType won't allow it.
+            file_list = list(filter(
+                lambda x: False if "vnd" in x["mimeType"] else x, file_list
+            ))
 
         if not os.path.exists(target):
             try:

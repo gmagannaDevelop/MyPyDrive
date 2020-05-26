@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#! /Users/gml/Library/Caches/pypoetry/virtualenvs/mypydrive-NpopQ0MI-py3.7/bin/python
 """
     Hell yeah !
 """
@@ -54,10 +54,24 @@ def pull(d: Drive, config: objdict, verbose: bool = True) -> NoReturn:
             print(f"Error details : {e}\n")
 ##
 
-def push(d: Drive, config: objdict) -> NoReturn:
+def push(d: Drive, config: objdict, verbose: bool = True) -> NoReturn:
     """
     """
-    print("push")
+    gfiles = d.ez_query(directory=config.info.id)
+    remote_filenames = set([
+        f['title'] for f in gfiles if not 'vnd' in f['mimeType']
+    ])
+    local_filenames = set([
+        f for f in os.listdir('.') if os.path.isfile(f)
+    ])
+    names_to_push = local_filenames - remote_filenames
+    for name in names_to_push:
+        d.upload_simple(
+            source=name,
+            title=name,
+            parent_id=config.info.id,
+            verbose=verbose
+        )
 ##
 
 def generate_config_interactive() -> objdict:

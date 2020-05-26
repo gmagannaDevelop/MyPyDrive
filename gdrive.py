@@ -18,6 +18,15 @@ from customobjs import objdict
 
 DEFAULT_CONFIG_FILE = ".gdrive.toml"
 
+def is_non_zero_file(fpath):
+    """
+    """
+    try:
+        return os.path.isfile(fpath) and os.path.getsize(fpath) > 0
+    except:
+        return False
+##
+
 def parse_congfig(config_file: Optional[str] = None) -> objdict:
     """
         Parse configuration from a TOML file,
@@ -25,9 +34,13 @@ def parse_congfig(config_file: Optional[str] = None) -> objdict:
     """
     global DEFAULT_CONFIG_FILE
     config_file = config_file or DEFAULT_CONFIG_FILE
-    with open(config_file, "r") as f:
-        _conf = toml.load(f, _dict=objdict)
-    return _conf
+    if is_non_zero_file(config_file):
+        with open(config_file, "r") as f:
+            _conf = toml.load(f, _dict=objdict)
+        return _conf
+    else:
+        generate_config_interactive()
+        return parse_congfig()
 ##
 
 def pull(d: Drive, config: objdict, verbose: bool = True) -> NoReturn:
@@ -62,7 +75,7 @@ def push(d: Drive, config: objdict, verbose: bool = True) -> NoReturn:
         f['title'] for f in gfiles if not 'vnd' in f['mimeType']
     ])
     local_filenames = set([
-        f for f in os.listdir('.') if os.path.isfile(f)
+        f for f in os.listdir('.') if is_non_zero_file(f)
     ])
     names_to_push = local_filenames - remote_filenames
     names_to_push -= set(config.ignore.file_list)
@@ -83,7 +96,7 @@ def status(d: Drive, config: objdict, verbose: bool = True) -> NoReturn:
         f['title'] for f in gfiles if not 'vnd' in f['mimeType']
     ])
     local_filenames = set([
-        f for f in os.listdir('.') if os.path.isfile(f)
+        f for f in os.listdir('.') if is_non_zero_file(f)
     ])
     names_to_push = local_filenames - remote_filenames
     names_to_push -= set(config.ignore.file_list)
@@ -153,6 +166,26 @@ def generate_config_interactive() -> objdict:
 
 ##
 
+def add_ignore(file: str, config_file: Optional[str] = None) ->  NoReturn:
+    """
+    """
+    global DEFAULT_CONFIG_FILE
+    config_file = config_file or DEFAULT_CONFIG_FILE
+    with open(config_file, "r") as f:
+        _conf = toml.load(f, _dict=objdict)
+    if file:
+        _conf.ignore.file_list.append(file)
+        try:
+            with open(config_file, "w") as f:
+                toml.dump(_conf, f)
+                print(f" file {file} will now be ignored ")
+        except:
+            print(f"failed to update config file {config_file}")
+    else:
+        print(f" Ignored files : \n{_conf.ignore.file_list}")
+        exit()
+##
+
 if __name__ == "__main__":
     if ".gdrive.toml" not in os.listdir('.'):
         print(f"\n\nNo {DEFAULT_CONFIG_FILE} file was found on this directory.")
@@ -166,13 +199,18 @@ if __name__ == "__main__":
     config = parse_congfig()
     d = Drive()
 
-    if len(sys.argv) == 2:
+    if len(sys.argv) >= 2:
         if sys.argv[1] == "pull":
             pull(d, config)
         elif sys.argv[1] == "push":
             push(d, config)
         elif sys.argv[1] == "status":
             status(d, config)
+        elif sys.argv[1] == "ignore":
+            if len(sys.argv) > 2:
+                add_ignore(sys.argv[2])
+            else:
+                add_ignore("")
         else:
             print(f"Unkown option {sys.argv[1]}")
     else:

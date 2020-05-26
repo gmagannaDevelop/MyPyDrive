@@ -1,0 +1,20 @@
+
+[mimetypes]   # Taken from : https://developers.google.com/drive/api/v3/mime-types
+audio = "application/vnd.google-apps.audio"
+gdoc  = "application/vnd.google-apps.document"        # Google Docs
+external = "application/vnd.google-apps.drive-sdk"    # 3rd party shortcut
+drawing  = "application/vnd.google-apps.drawing"      # Google Drawing
+gfile = "application/vnd.google-apps.file"            # Google Drive file
+gfolder = "application/vnd.google-apps.folder" 	      # Google Drive folder
+gform = "application/vnd.google-apps.form" 	      # Google Forms
+gfusion = "application/vnd.google-apps.fusiontable"   # Google Fusion Tables
+gmaps = "application/vnd.google-apps.map" 	      # Google My Maps
+gphoto = "application/vnd.google-apps.photo"          #
+gslides = "application/vnd.google-apps.presentation"  # Google Slides
+gscript = "application/vnd.google-apps.script" 	      # Google Apps Scripts
+shortcut = "application/vnd.google-apps.shortcut"     # Shortcut
+gsite = "application/vnd.google-apps.site" 	      # Google Sites
+gsheet = "application/vnd.google-apps.spreadsheet"    # Google Sheets
+unkown = "application/vnd.google-apps.unknown"        #
+gvideo = "application/vnd.google-apps.video"          #
+

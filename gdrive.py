@@ -214,8 +214,9 @@ if __name__ == "__main__":
         else:
             print(f"Unkown option {sys.argv[1]}")
     else:
-        print("gdrive action")
-        print("action can be pull or push")
+        print("Usage :")
+        print("$ gdrive action")
+        print("\navailable actions are [pull, push, status, ignore]\n")
 
     """
     parser = argparse.ArgumentParser(

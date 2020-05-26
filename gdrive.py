@@ -30,16 +30,34 @@ def parse_congfig(config_file: Optional[str] = None) -> objdict:
     return _conf
 ##
 
-def pull() -> NoReturn:
+def pull(d: Drive, config: objdict, verbose: bool = True) -> NoReturn:
     """
     """
-    pass
+    gfiles = d.ez_query(directory=config.info.id)
+    remote_filenames = set([
+        f['title'] for f in gfiles if not 'vnd' in f['mimeType']
+    ])
+    local_filenames = set([
+        f for f in os.listdir('.') if os.path.isfile(f)
+    ])
+    names_to_pull = remote_filenames - local_filenames
+    files_to_pull = [
+        f for f in gfiles if f['title'] in names_to_pull
+    ]
+    for file in files_to_pull:
+        try:
+            if verbose: print(f"Downloading `{file['title']}` ...", end="\t")
+            file.GetContentFile(file['title'])
+            if verbose: print("Done")
+        except Exception as e:
+            print(f"\n\n ERROR: File `{file['title']}` could not be downloaded.")
+            print(f"Error details : {e}\n")
 ##
 
-def pull() -> NoReturn:
+def push(d: Drive, config: objdict) -> NoReturn:
     """
     """
-    pass
+    print("push")
 ##
 
 def generate_config_interactive() -> objdict:
@@ -96,7 +114,20 @@ if __name__ == "__main__":
         else:
             print("Bye!")
             exit()
+    else:
+        config = parse_congfig()
+        d = Drive()
+
+    if sys.argv[1] == "pull":
+        pull(d, config)
+    elif sys.argv[1] == "push":
+        push(d, config)
+    else:
+        print(f"Unkown option {sys.argv[1]}")
+
+    """
     parser = argparse.ArgumentParser(
         description='Basic git-like Google Drive management',
         epilog=""
     )
+    """

@@ -29,18 +29,25 @@ class Drive(object):
        "directory": ""
     }
 
-    def __init__(self, credentials_file: str = 'mycreds.txt'):
+    def __init__(
+        self,
+        path_to_creds: str = '.',
+        secrets_file: str = 'client_secrets.json',
+        credentials_file: str = 'mycreds.txt'
+    ):
         ''' Initialize the drive object with a default credentials_file,
         which should be in the same directory as the script. A file can be
         specified providing the relative or absolute path.
         'client_secrets.json' MUST BE ON THE SAME DIRECTORY, OTHERWISE
         AN EXCEPTION WILL BE THROWN.
         '''
-        if 'client_secrets.json' not in os.listdir('.'):
-            raise Exception(f"client_secrets.json not found in {os.path.abspath('.')}")
+
+        GoogleAuth.DEFAULT_SETTINGS['client_config_file'] = os.path.join(path_to_creds, secrets_file)
+        if secrets_file not in os.listdir(path_to_creds):
+            raise Exception(f"{secrets_file} not found in {path_to_creds}")
         self.__gauth = GoogleAuth()
         try:
-            self.__gauth.LoadCredentialsFile(credentials_file)
+            self.__gauth.LoadCredentialsFile(os.path.join(path_to_creds, credentials_file))
         except Exception:
             pass
         if self.__gauth.credentials is None:
@@ -57,7 +64,7 @@ class Drive(object):
             self.__gauth.Refresh()
         else:
             self.__gauth.Authorize()
-        self.__gauth.SaveCredentialsFile(credentials_file)
+        self.__gauth.SaveCredentialsFile(os.path.join(path_to_creds, credentials_file))
         self.__drive = GoogleDrive(self.__gauth)
     # END __init__
 
@@ -85,7 +92,7 @@ class Drive(object):
         pass
 
 
-    def my_query(
+    def ez_query(
         self,
         file_name: Optional[str] = None,
         directory: Optional[str] = None
@@ -161,6 +168,7 @@ class Drive(object):
         title: str,
         id: Optional[str] = None,
         parent_id: Optional[str] = None,
+        verbose: bool = True
     ) -> NoReturn:
         """
         """
@@ -237,22 +245,6 @@ class Drive(object):
 
     ##
 
-    def pull(
-        self
-    ) -> NoReturn:
-        """
-        """
-        self.my_query()
-    ##
-
-    def push(
-        self
-    ) -> NoReturn:
-        """
-        """
-        pass
-    ##
-
     def download_directory(
         self,
         target: str,
@@ -267,7 +259,7 @@ class Drive(object):
             raise Exception('Specify a directory name (if located at root), or id')
 
         _dir = id or name
-        file_list = self.my_query(directory=_dir)
+        file_list = self.ez_query(directory=_dir)
         if safe: # Prevent trying to download files whose mimeType won't allow it.
             file_list = list(filter(
                 lambda x: False if "vnd" in x["mimeType"] else x, file_list
@@ -291,6 +283,16 @@ class Drive(object):
             except Exception as e:
                 print(f"\n\n ERROR: File `{file['title']}` could not be downloaded.")
                 print(f"Error details : {e}\n")
+    ##
+
+    def download_by_id(self, id: str, target: str) -> NoReturn:
+        """
+        """
+        try:
+            _file = self.drive.CreateFile({"id": id})
+            _file.GetContentFile(target)
+        except:
+            print(f"Downloading file with id {id} to target {target} failed.")
     ##
 
     def download_file(self, file_name: str = '', target_name: str = ''):

@@ -176,7 +176,7 @@ class Drive(object):
 
         _file = self.drive.CreateFile({
             'title': title,
-            parents: [{
+            'parents': [{
                 "kind": "drive#parentReference",
                 "id": parent_id,
                 "isRoot": (lambda x: True if x == "root" else False)(parent_id)

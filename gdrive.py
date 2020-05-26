@@ -51,7 +51,7 @@ def pull(d: Drive, config: objdict, verbose: bool = True) -> NoReturn:
         f['title'] for f in gfiles if not 'vnd' in f['mimeType']
     ])
     local_filenames = set([
-        f for f in os.listdir('.') if os.path.isfile(f)
+        f for f in os.listdir('.') if is_non_zero_file(f)
     ])
     names_to_pull = remote_filenames - local_filenames
     files_to_pull = [

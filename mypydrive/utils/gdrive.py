@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """
     Replace the shebang to match the needed path for the virtualenv created
     for this utility.
@@ -195,7 +194,10 @@ def add_ignore(file: str, config_file: Optional[str] = None) -> NoReturn:
 
 ##
 
-if __name__ == "__main__":
+def main():
+    """
+        The main script of the module.
+    """
     if ".gdrive.toml" not in os.listdir("."):
         print(f"\n\nNo {DEFAULT_CONFIG_FILE} file was found on this directory.")
         gen_conf = input("Interactively generate config? [y/n] : ")

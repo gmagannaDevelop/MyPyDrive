@@ -1,5 +1,7 @@
 
 from mypydrive.utils import gdrive
+import sys
 
-gdrive.main()
+if __name__ == "__main__":
+    gdrive.main(sys.argv)
 

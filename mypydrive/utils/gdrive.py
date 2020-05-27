@@ -29,8 +29,6 @@ def is_non_zero_file(fpath):
         return os.path.isfile(fpath) and os.path.getsize(fpath) > 0
     except:
         return False
-
-
 ##
 
 
@@ -194,7 +192,7 @@ def add_ignore(file: str, config_file: Optional[str] = None) -> NoReturn:
 
 ##
 
-def main():
+def main(argv):
     """
         The main script of the module.
     """
@@ -210,20 +208,20 @@ def main():
     config = parse_congfig()
     d = Drive()
 
-    if len(sys.argv) >= 2:
-        if sys.argv[1] == "pull":
+    if len(argv) >= 2:
+        if argv[1] == "pull":
             pull(d, config)
-        elif sys.argv[1] == "push":
+        elif argv[1] == "push":
             push(d, config)
-        elif sys.argv[1] == "status":
+        elif argv[1] == "status":
             status(d, config)
-        elif sys.argv[1] == "ignore":
-            if len(sys.argv) > 2:
-                add_ignore(sys.argv[2])
+        elif argv[1] == "ignore":
+            if len(argv) > 2:
+                add_ignore(argv[2])
             else:
                 add_ignore("")
         else:
-            print(f"Unkown option {sys.argv[1]}")
+            print(f"Unkown option {argv[1]}")
     else:
         print("Usage :")
         print("$ gdrive action")
@@ -235,3 +233,6 @@ def main():
         epilog=""
     )
     """
+
+if __name__ == "__main__":
+    main(sys.argv)

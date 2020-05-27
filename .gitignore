@@ -1,4 +1,9 @@
 client_secrets.json
 mycreds.txt
-__pycache__/*
+*__pycache__/
 .DS_Store
+bin/*
+*.pyc
+.*.swp
+poetry.lock
+dist/

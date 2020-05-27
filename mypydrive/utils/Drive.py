@@ -12,13 +12,14 @@ backed up on Google Drive.
 
 """
 import os
+import pathlib
 
 from pydrive.auth import GoogleAuth
 from pydrive.drive import GoogleDrive
 
 from typing import List, Dict, NoReturn, Any, Callable, Optional, Union
 
-from customobjs import objdict
+from mypydrive.utils.customobjs import objdict
 
 
 class Drive(object):
@@ -30,7 +31,7 @@ class Drive(object):
 
     def __init__(
         self,
-        path_to_creds: str = ".",
+        path_to_creds: str = os.path.join(pathlib.Path.home(), ".gdrive"),
         secrets_file: str = "client_secrets.json",
         credentials_file: str = "mycreds.txt",
     ):

@@ -1,6 +1,10 @@
-#! /Users/gml/Library/Caches/pypoetry/virtualenvs/mypydrive-NpopQ0MI-py3.7/bin/python
+#!/usr/bin/env python
 """
-    Hell yeah !
+    Replace the shebang to match the needed path for the virtualenv created
+    for this utility.
+
+    This is a minimalistic command line utility that mimics git's
+    behaviour, but instead of repositories uses Google Drive directories.
 """
 
 import os
@@ -13,8 +17,8 @@ from pydrive.drive import GoogleDrive
 
 from typing import List, Dict, NoReturn, Any, Callable, Optional, Union
 
-from Drive import Drive
-from customobjs import objdict
+from mypydrive.utils.Drive import Drive
+from mypydrive.utils.customobjs import objdict
 
 DEFAULT_CONFIG_FILE = ".gdrive.toml"
 

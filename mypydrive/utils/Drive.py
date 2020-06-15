@@ -31,7 +31,7 @@ class Drive(object):
 
     def __init__(
         self,
-        path_to_creds: str = os.path.join(pathlib.Path.home(), ".gdrive"),
+        path_to_creds: str = os.path.join(pathlib.Path.home(), ".config/gdrive"),
         secrets_file: str = "client_secrets.json",
         credentials_file: str = "mycreds.txt",
     ):

@@ -192,10 +192,12 @@ def add_ignore(file: str, config_file: Optional[str] = None) -> NoReturn:
 
 ##
 
-def main(argv):
+def main(argv: Optional[str] = None):
     """
         The main script of the module.
     """
+
+    argv = argv or sys.argv
     if ".gdrive.toml" not in os.listdir("."):
         print(f"\n\nNo {DEFAULT_CONFIG_FILE} file was found on this directory.")
         gen_conf = input("Interactively generate config? [y/n] : ")

@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "MyPyDrive"
-version = "0.1.2"
+version = "0.1.4"
 description = "Simple and effective way to interact with Google Drive via Python."
 authors = ["Gustavo Magaña López"]
 license = "MIT"
@@ -14,7 +14,7 @@ toml = "^0.10.1"
 ipython = "^7.14.0"
 
 [tool.poetry.scripts]
-drive = "utils.gdrive:main"
+drive = "mypydrive.utils.gdrive:main"
 
 [build-system]
 requires = ["poetry>=0.12"]

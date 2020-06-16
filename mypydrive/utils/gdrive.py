@@ -153,7 +153,7 @@ def generate_config_interactive() -> objdict:
 
     print(f"\n{_config}\n")
     _is_correct = input("Is this configuration correct? [y/n] : ")
-    if _is_correct:
+    if _is_correct == 'y':
         _config = objdict(
             {"info": _config, "ignore": {"file_list": [".gdrive.toml"], "glob": []}}
         )
@@ -165,8 +165,8 @@ def generate_config_interactive() -> objdict:
         except:
             print(f"Could not write configuration to {DEFAULT_CONFIG_FILE}")
             exit()
-
-
+    else:
+        generate_config_interactive()
 ##
 
 

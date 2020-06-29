@@ -155,7 +155,7 @@ def generate_config_interactive() -> objdict:
     _is_correct = input("Is this configuration correct? [y/n] : ")
     if _is_correct == 'y':
         _config = objdict(
-            {"info": _config, "ignore": {"file_list": [".gdrive.toml"], "glob": []}}
+            {"info": _config, "ignore": {"file_list": [".DS_Store"], "glob": []}}
         )
         try:
             print(f"\nWriting configuration to {DEFAULT_CONFIG_FILE} ...", end="\t")
